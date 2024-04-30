@@ -47,7 +47,7 @@
 		/** default theme **/
 		.overlay {
 			font-size: 10vh;
-			font-family: sans-serif;
+			font-family: 'Futura', 'Calibri', sans-serif;
 			text-transform: uppercase;
 			color: white;
 			background: rgba(0, 0, 0, 0.8);
@@ -264,7 +264,7 @@
 
 			if (LOGGING) console.log(global_cycle, cycle_childrens)
 
-			for (var i = cycle_childrens.length - 1; i >= 0; i--) {
+			for (var i = 0; i < cycle_childrens.length; i++) {
 				let row_element = cycle_childrens[i];
 				row_element.innerHTML = ''
 				//if (LOGGING) console.log(cycle_childrens[i])
