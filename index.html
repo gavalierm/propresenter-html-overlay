@@ -9,6 +9,7 @@
 		html,
 		body,
 		#overlay {
+			position: relative;
 			margin: 0;
 			padding: 0;
 			background: transparent;
@@ -18,7 +19,6 @@
 		}
 
 		#overlay {
-			position: relative;
 			color: red;
 		}
 
@@ -56,20 +56,20 @@
 
 <body>
 	<div id="overlay" class="">
-		<div id="cycle_a">
+		<div id="cycle_a" class="cycle">
 			<div class="wrapper">
-				<div class="target target_1 ca"></div>
-				<div class="target target_2 ca"></div>
-				<div class="target target_3 ca"></div>
-				<div class="target target_4 ca"></div>
+				<div class="row row_0"></div>
+				<div class="row row_1"></div>
+				<div class="row row_2"></div>
+				<div class="row row_3"></div>
 			</div>
 		</div>
-		<div id="cycle_b">
+		<div id="cycle_b" class="cycle">
 			<div class="wrapper">
-				<div class="target target_1 cb"></div>
-				<div class="target target_2 cb"></div>
-				<div class="target target_3 cb"></div>
-				<div class="target target_4 cb"></div>
+				<div class="row row_0"></div>
+				<div class="row row_1"></div>
+				<div class="row row_2"></div>
+				<div class="row row_3"></div>
 			</div>
 		</div>
 	</div>
@@ -249,20 +249,21 @@
 				var cycle_element = cycle_element_a;
 			}
 
-			var cycle_childrens = cycle_element.getElementsByClassName("target");
+			var cycle_childrens = cycle_element.getElementsByClassName("row");
 
 			if (LOGGING) console.log(global_cycle, cycle_childrens)
 
 			for (var i = cycle_childrens.length - 1; i >= 0; i--) {
-				let target_element = cycle_childrens[i];
-				target_element.innerHTML = ''
+				let row_element = cycle_childrens[i];
+				row_element.innerHTML = ''
 				//if (LOGGING) console.log(cycle_childrens[i])
 				if (!isNa(slide.current.segments) && slide.current.segments.length > 0) {
 					if (!isNa(slide.current.segments[i])) {
-						target_element.innerHTML = slide.current.segments[i].txt
+						row_element.innerHTML = slide.current.segments[i].txt
 					}
 				} else {
-					target_element.innerHTML = slide.current.txt
+					row_element.innerHTML = slide.current.txt
+					break;
 				}
 
 			}
