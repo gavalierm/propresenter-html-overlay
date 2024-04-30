@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>ProPresenter Overlay</title>
+	<style type="text/css">
+		html,
+		body,
+		#overlay {
+			margin: 0;
+			padding: 0;
+			background: transparent;
+		}
+
+		#overlay {
+			position: relative;
+			display: flex;
+		}
+
+		#cycle_a,
+		#cycle_b {
+			position: absolute;
+			opacity: 0;
+			transition: all 1s;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+		}
+
+		.on_cycle #cycle_a {
+			opacity: 0;
+		}
+
+		#cycle_a,
+		.on_cycle #cycle_b {
+			opacity: 1;
+		}
+	</style>
+
+	<script type="text/javascript">
+		let global_host = 'localhost';
+		let global_port = '1024';
+		let global_pass = 'stage_default';
+	</script>
+</head>
+
+<body>
+	<div id="overlay" class="cycle_a">
+		<div id="cycle_a">
+			<div class="target target_1 ca"></div>
+			<div class="target target_2 ca"></div>
+			<div class="target target_3 ca"></div>
+			<div class="target target_4 ca"></div>
+		</div>
+		<div id="cycle_b">
+			<div class="target target_1 cb"></div>
+			<div class="target target_2 cb"></div>
+			<div class="target target_3 cb"></div>
+			<div class="target target_4 cb"></div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		let LOGGING = true;
+		//
+		var remoteWebSocket;
+		var global_connection_timer;
+
+		var global_cycle = false;
+
+		var overlay = document.getElementById("overlay");
+		var cycle_element_a = document.getElementById("cycle_a");
+		var cycle_element_b = document.getElementById("cycle_b");
+
+		async function connect() {
+			if (LOGGING) console.warn('Connecting...');
+			clearTimeout(global_connection_timer);
+			if (isNa(global_host) || isNa(global_port) || isNa(global_pass)) {
+				return false;
+			}
+			if (remoteWebSocket) {
+				if (LOGGING) console.warn('Socket opened before reconnect: Closing socket');
+				remoteWebSocket.close();
+			}
+			wsUri = "ws://" + global_host + ":" + global_port;
+			remoteWebSocket = new WebSocket(wsUri + "/stagedisplay");
+			remoteWebSocket.onopen = function() { onOpen(); };
+			remoteWebSocket.onclose = function() { onClose(); };
+			remoteWebSocket.onmessage = function(evt) { onMessage(JSON.parse(evt.data)); };
+			remoteWebSocket.onerror = function(evt) { onError(evt); };
+		}
+		async function onError(evt) {
+			if (LOGGING) console.log('onError received', evt);
+			if (remoteWebSocket) {
+				if (LOGGING) console.error('Socket encountered error: ', evt.message, 'Closing socket');
+				remoteWebSocket.close();
+			}
+		}
+		async function onClose() {
+			if (LOGGING) console.error('onClose received');
+			clearTimeout(global_connection_timer);
+			global_connection_timer = setTimeout(function() {
+				connect();
+			}, 5000);
+		}
+		async function onOpen() {
+			if (LOGGING) console.log('onOpen received');
+			clearTimeout(global_connection_timer);
+			remoteWebSocket.send('{"acn":"ath","ptl":610,"pwd":"' + global_pass + '"}');
+		}
+		async function onMessage(obj) {
+			//if (LOGGING) console.log('Message received', obj);
+			//
+			if (!isNa(obj.error)) {
+				if (LOGGING) console.error(obj);
+				return;
+			}
+
+			if (obj.hasOwnProperty('acn') && obj.acn == 'ath') {
+				if (LOGGING) console.log(obj);
+				if (!obj || !obj.acn || !obj.ath) {
+					if (LOGGING) console.error("\n\n\nPropresenter: Auth failed\n\n\n")
+					return connect();
+				}
+				return;
+			}
+
+			if (obj.hasOwnProperty('acn') && obj.acn != 'fv') {
+				return;
+			}
+			//
+
+			return propresenter_parse_slide(obj)
+		}
+
+
+		async function propresenter_parse_slide(data) {
+			//if (LOGGING) console.log('Slide received', data);
+			//
+			if (data.ary === undefined) {
+				if (LOGGING) console.log("ProPresenter: undefined data");
+				return;
+			}
+			// struct
+			let slide = {
+				current: {
+					txt: '',
+					segments: [
+					]
+				},
+				next: {
+					txt: '',
+					segments: [
+					]
+				}
+			}
+			for (var i = 0; i < data.ary.length; i++) {
+				//console.log(content[i]);
+
+				if (data.ary[i].acn !== 'cs' && data.ary[i].acn !== 'ns') {
+					//skip other stuff
+					continue;
+				}
+				//
+				let txt = ''
+				let split = []
+				switch (data.ary[i].acn) {
+					case 'cs':
+						if (data.ary[i].txt !== '') {
+							// optimalisation
+							txt = data.ary[i].txt.trim().replace(/^\x82+|\x82+$/gm, "").replace(/(^\r+)|(\r+$)/g, "").replace(/\n|\x0B|\x0C|\u0085|\u2028|\u2029/g, "\n")
+							//replace non-printable char
+							txt = txt.replace(/\u00a0/gm, " ");
+
+							// reverse order
+							//split = txt.split("\r").reverse()
+							// stadnard order
+							split = txt.split("\r")
+							txt = split.join("\r")
+							//
+							slide.current = parse_slide_segments([txt])[0]
+							//
+							if (split.length > 1) {
+								slide.current.segments = parse_slide_segments(split)
+							}
+						}
+						break;
+					case 'ns':
+						if (data.ary[i].txt !== '') {
+							// optimalisation
+							txt = data.ary[i].txt.trim().replace(/^\x82+|\x82+$/gm, "").replace(/(^\r+)|(\r+$)/g, "").replace(/\n|\x0B|\x0C|\u0085|\u2028|\u2029/g, "\n")
+
+							//replace non-printable char
+							txt = txt.replace(/\u00a0/gm, " ");
+
+							// reverse order
+							//split = txt.split("\r").reverse()
+							// standard order
+							split = txt.split("\r")
+							txt = split.join("\r")
+							//
+							slide.next = parse_slide_segments([txt])[0]
+							//
+							if (split.length > 1) {
+								slide.next.segments = parse_slide_segments(split)
+							}
+						}
+						break;
+				}
+			}
+
+			//console.log(slide.current)
+			return populate_overlay(slide)
+		}
+
+		function parse_slide_segments(segments) {
+			//
+			let segments_ = []
+			//
+			for (var i = 0; i < segments.length; i++) {
+				segments[i] = segments[i].replace(/(^\n+)|(\n+$)/g, "")
+				segments_.push({
+					txt: segments[i]
+				})
+			}
+			//
+			return segments_;
+		}
+
+		async function populate_overlay(slide) {
+			//if (LOGGING) console.log(slide)
+
+			var cycle_element = cycle_element_b;
+			if (global_cycle) {
+				console.log("LOOOOOOOL");
+				var cycle_element = cycle_element_a;
+			}
+
+			var cycle_childrens = cycle_element.getElementsByClassName("target");
+
+			if (LOGGING) console.log(global_cycle, cycle_childrens)
+
+			for (var i = cycle_childrens.length - 1; i >= 0; i--) {
+				let target_element = cycle_childrens[i];
+				target_element.innerHTML = ''
+				//if (LOGGING) console.log(cycle_childrens[i])
+				if (!isNa(slide.current.segments) && slide.current.segments.length > 0) {
+					if (!isNa(slide.current.segments[i])) {
+						target_element.innerHTML = slide.current.segments[i].txt
+					}
+				} else {
+					target_element.innerHTML = slide.current.txt
+				}
+
+			}
+
+			overlay.classList.toggle("on_cycle");
+
+			//reverse cycle on each slide
+			global_cycle = !global_cycle;
+			//
+			return;
+
+		}
+
+		function isNa(target) {
+			if (target === undefined || target === 'undefined' || target === '' || target === null) {
+				return true
+			}
+			return false;
+		}
+
+		//execute
+		connect();
+	</script>
+</body>
+
+</html>
