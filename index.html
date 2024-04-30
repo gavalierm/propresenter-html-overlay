@@ -264,20 +264,26 @@
 
 			if (LOGGING) console.log(global_cycle, cycle_childrens)
 
-			for (var i = 0; i < cycle_childrens.length; i++) {
-				let row_element = cycle_childrens[i];
-				row_element.innerHTML = ''
-				//if (LOGGING) console.log(cycle_childrens[i])
-				if (!isNa(slide.current.segments) && slide.current.segments.length > 0) {
+
+			if (!isNa(slide.current.segments) && slide.current.segments.length > 0) {
+				for (var i = 0; i < cycle_childrens.length; i++) {
+					let row_element = cycle_childrens[i];
 					if (!isNa(slide.current.segments[i])) {
 						row_element.innerHTML = slide.current.segments[i].txt
+					} else {
+						row_element.innerHTML = ''
 					}
-				} else {
-					row_element.innerHTML = slide.current.txt
-					break;
 				}
-
+			} else {
+				for (var i = 1; i < cycle_childrens.length; i++) {
+					cycle_childrens[i].innerHTML = ''
+				}
+				cycle_childrens[0].innerHTML = slide.current.txt
 			}
+
+
+
+
 
 			overlay.classList.toggle("on_cycle");
 
