@@ -3,6 +3,11 @@
 Just simple HTML overlay with vanilla javascript for OBS, vMix, ...
 
 
+## Usage
+
+Download `index.html` to your PC. Open OBS and add "Browser" source. Check the "Local file" checkbox and select downloaded file.
+
+
 ## Theme
 
 OBS have build-in CSS editor for browser.
