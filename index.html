@@ -7,19 +7,18 @@
 	<title>ProPresenter Overlay</title>
 	<style type="text/css">
 		html,
+		body {
+			background: transparent;
+		}
+
+		html,
 		body,
-		#overlay {
+		.overlay {
 			position: relative;
 			margin: 0;
 			padding: 0;
-			background: transparent;
-			font-size: 5vh;
 			width: 100vw;
 			height: 100vh;
-		}
-
-		#overlay {
-			color: red;
 		}
 
 		#cycle_a,
@@ -29,14 +28,13 @@
 			justify-content: center;
 			text-align: center;
 			position: absolute;
-			opacity: 0;
-			transition: all 1s;
 			top: 0;
 			left: 0;
 			right: 0;
 			bottom: 0;
 		}
 
+		#cycle_b,
 		.on_cycle #cycle_a {
 			opacity: 0;
 		}
@@ -44,6 +42,19 @@
 		#cycle_a,
 		.on_cycle #cycle_b {
 			opacity: 1;
+		}
+
+		/** default theme **/
+		.overlay {
+			font-size: 10vh;
+			font-family: sans-serif;
+			text-transform: uppercase;
+			color: white;
+			background: rgba(0, 0, 0, 0.8);
+		}
+
+		.box {
+			transition: opacity 0.01s linear;
 		}
 	</style>
 
@@ -55,8 +66,8 @@
 </head>
 
 <body>
-	<div id="overlay" class="">
-		<div id="cycle_a" class="cycle">
+	<div id="overlay" class="overlay">
+		<div id="cycle_a" class="box">
 			<div class="wrapper">
 				<div class="row row_0"></div>
 				<div class="row row_1"></div>
@@ -64,7 +75,7 @@
 				<div class="row row_3"></div>
 			</div>
 		</div>
-		<div id="cycle_b" class="cycle">
+		<div id="cycle_b" class="box">
 			<div class="wrapper">
 				<div class="row row_0"></div>
 				<div class="row row_1"></div>
