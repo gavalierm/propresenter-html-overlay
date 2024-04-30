@@ -12,15 +12,22 @@
 			margin: 0;
 			padding: 0;
 			background: transparent;
+			font-size: 5vh;
+			width: 100vw;
+			height: 100vh;
 		}
 
 		#overlay {
 			position: relative;
-			display: flex;
+			color: red;
 		}
 
 		#cycle_a,
 		#cycle_b {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
 			position: absolute;
 			opacity: 0;
 			transition: all 1s;
@@ -48,23 +55,27 @@
 </head>
 
 <body>
-	<div id="overlay" class="cycle_a">
+	<div id="overlay" class="">
 		<div id="cycle_a">
-			<div class="target target_1 ca"></div>
-			<div class="target target_2 ca"></div>
-			<div class="target target_3 ca"></div>
-			<div class="target target_4 ca"></div>
+			<div class="wrapper">
+				<div class="target target_1 ca"></div>
+				<div class="target target_2 ca"></div>
+				<div class="target target_3 ca"></div>
+				<div class="target target_4 ca"></div>
+			</div>
 		</div>
 		<div id="cycle_b">
-			<div class="target target_1 cb"></div>
-			<div class="target target_2 cb"></div>
-			<div class="target target_3 cb"></div>
-			<div class="target target_4 cb"></div>
+			<div class="wrapper">
+				<div class="target target_1 cb"></div>
+				<div class="target target_2 cb"></div>
+				<div class="target target_3 cb"></div>
+				<div class="target target_4 cb"></div>
+			</div>
 		</div>
 	</div>
 
 	<script type="text/javascript">
-		let LOGGING = true;
+		let LOGGING = false;
 		//
 		var remoteWebSocket;
 		var global_connection_timer;
@@ -235,7 +246,6 @@
 
 			var cycle_element = cycle_element_b;
 			if (global_cycle) {
-				console.log("LOOOOOOOL");
 				var cycle_element = cycle_element_a;
 			}
 
